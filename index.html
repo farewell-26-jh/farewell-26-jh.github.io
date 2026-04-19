@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0A0A0F" />
+  <title>Wall of Truth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --accent:#6075E0;--accent-light:#7B8FE8;--accent-lighter:#A0AEED;
+      --accent-dim:rgba(96,117,224,0.12);--accent-mid:rgba(96,117,224,0.22);
+      --accent-glow:rgba(96,117,224,0.35);
+      --like-color:#4CD97B;--like-dim:rgba(76,217,123,0.12);--like-glow:rgba(76,217,123,0.3);
+      --skip-color:#E05C6E;--skip-dim:rgba(224,92,110,0.12);--skip-glow:rgba(224,92,110,0.3);
+      --bg:#0A0A0F;--bg-surface:#0F0F18;--bg-card:#13131F;--bg-card-seen:#0E0E18;--bg-elevated:#1A1A2A;
+      --border:rgba(96,117,224,0.1);--border-subtle:rgba(96,117,224,0.05);--border-active:rgba(96,117,224,0.3);
+      --text:#EEEEFF;--text-secondary:rgba(238,238,255,0.55);--text-dim:rgba(238,238,255,0.28);
+      --radius:14px;--radius-sm:8px;--radius-full:999px;
+      --shadow-card:0 2px 12px rgba(0,0,0,0.4);
+      --shadow-float:0 8px 40px rgba(0,0,0,0.55),0 0 0 1px rgba(96,117,224,0.08);
+      --shadow-btn:0 4px 20px rgba(96,117,224,0.4),0 1px 4px rgba(0,0,0,0.3);
+      --shadow-btn-hover:0 6px 28px rgba(96,117,224,0.55),0 2px 8px rgba(0,0,0,0.3);
+      --text-xs:0.68rem;--text-sm:0.82rem;--text-base:0.95rem;--text-md:1.05rem;
+      --text-lg:1.2rem;--text-xl:1.45rem;
+      --space-xs:0.25rem;--space-sm:0.5rem;--space-md:1rem;--space-lg:1.5rem;--space-xl:2rem;
+      --dur-fast:140ms;--dur-normal:280ms;
+      --ease-spring:cubic-bezier(0.34,1.56,0.64,1);--ease-smooth:cubic-bezier(0.4,0,0.2,1);
+      --max-content:560px;
+      --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(96,117,224,0.2);border-radius:2px}
+    .app{display:flex;flex-direction:column;min-height:100dvh;max-width:var(--max-content);margin:0 auto;background:linear-gradient(180deg,rgba(96,117,224,0.04) 0%,transparent 35%)}
+
+    .header{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:var(--space-md) var(--space-lg);padding-top:calc(var(--space-md) + var(--safe-top))}
+    .header-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-sm)}
+    .header-wordmark{display:flex;flex-direction:column;gap:2px}
+    .header-title{font-size:var(--text-lg);font-weight:900;letter-spacing:-0.04em;background:linear-gradient(135deg,var(--text) 20%,var(--accent-lighter) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .header-tagline{font-size:var(--text-xs);font-weight:500;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.1em}
+    .header-right{display:flex;align-items:center;gap:var(--space-sm);flex-shrink:0}
+    .hdr-btn{display:inline-flex;align-items:center;gap:4px;font-family:inherit;font-size:var(--text-xs);font-weight:700;padding:5px 11px;border-radius:var(--radius-full);border:1px solid;cursor:pointer;transition:all var(--dur-fast);touch-action:manipulation;white-space:nowrap}
+    .hdr-btn-liked{background:var(--like-dim);border-color:rgba(76,217,123,0.2);color:rgba(76,217,123,0.8)}
+    .hdr-btn-liked:hover{background:rgba(76,217,123,0.2);color:var(--like-color)}
+    .hdr-btn-skipped{background:var(--skip-dim);border-color:rgba(224,92,110,0.15);color:rgba(224,92,110,0.7)}
+    .hdr-btn-skipped:hover{background:rgba(224,92,110,0.18);color:var(--skip-color)}
+    .badge-pill{font-size:0.56rem;font-weight:800;min-width:15px;height:15px;padding:0 3px;border-radius:var(--radius-full);display:inline-flex;align-items:center;justify-content:center}
+    .badge-liked{background:var(--like-color);color:#fff}
+    .badge-skipped{background:var(--skip-color);color:#fff}
+    .unseen-badge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;padding:0 8px;border-radius:var(--radius-full);font-size:var(--text-xs);font-weight:700;transition:all var(--dur-normal)}
+    .unseen-badge.has-unseen{background:var(--accent);color:#fff;box-shadow:0 2px 10px rgba(96,117,224,0.45)}
+    .unseen-badge.all-seen{background:rgba(255,255,255,0.05);color:var(--text-dim)}
+
+    .status-bar{display:flex;align-items:center;justify-content:space-between;padding:6px var(--space-lg);background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);font-size:var(--text-xs);color:var(--text-dim);font-weight:500}
+    .status-count{color:var(--accent-light);font-weight:700}
+
+    .new-banner{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:center;gap:var(--space-sm);padding:10px var(--space-lg);background:var(--accent);color:#fff;font-size:var(--text-sm);font-weight:700;cursor:pointer;border-radius:var(--radius);margin:var(--space-md) var(--space-lg) 0;box-shadow:var(--shadow-btn);animation:banner-drop var(--dur-normal) var(--ease-spring);touch-action:manipulation}
+    @keyframes banner-drop{from{opacity:0;transform:translateY(-10px)}}
+    .new-banner:active{opacity:.88}
+
+    .main{flex:1;padding:var(--space-lg);padding-bottom:calc(90px + var(--space-lg) + var(--safe-bottom))}
+
+    .submit-banner{margin-bottom:var(--space-lg);padding:var(--space-md) var(--space-lg);background:var(--accent-dim);border:1px solid var(--border-active);border-radius:var(--radius);display:flex;align-items:center;justify-content:space-between;gap:var(--space-md)}
+    .submit-copy{display:flex;flex-direction:column;gap:2px}
+    .submit-prompt{font-size:var(--text-sm);font-weight:700;color:var(--text);transition:opacity 300ms ease}
+    .submit-sub{font-size:var(--text-xs);color:var(--text-secondary)}
+    .submit-link{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;background:var(--accent);color:#fff;text-decoration:none;font-size:var(--text-sm);font-weight:700;padding:9px 18px;border-radius:var(--radius-full);white-space:nowrap;transition:opacity var(--dur-fast),transform var(--dur-fast);touch-action:manipulation}
+    .submit-link:hover{opacity:.9;transform:translateY(-1px)}
+    .submit-link:active{opacity:.8;transform:scale(.97)}
+
+    .state-msg{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-md);padding:var(--space-xl) var(--space-lg);text-align:center;min-height:220px}
+    .state-icon{font-size:2.2rem;opacity:.45}.state-title{font-size:var(--text-md);font-weight:700;color:var(--text)}
+    .state-body{font-size:var(--text-sm);color:var(--text-dim);max-width:240px;line-height:1.65}
+    .spinner{width:30px;height:30px;border:2px solid var(--bg-elevated);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .error-strip{margin:var(--space-sm) 0;padding:var(--space-sm) var(--space-md);background:rgba(220,80,80,0.08);border:1px solid rgba(220,80,80,0.18);border-radius:var(--radius-sm);color:rgba(220,80,80,.85);font-size:var(--text-xs);font-weight:500}
+
+    .mark-all-bar{display:flex;justify-content:flex-end;margin-bottom:var(--space-md)}
+    .mark-all-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:inherit;font-size:var(--text-xs);font-weight:600;padding:5px 14px;border-radius:var(--radius-full);cursor:pointer;transition:all var(--dur-fast);touch-action:manipulation}
+    .mark-all-btn:hover{border-color:var(--border-active);color:var(--accent-light)}
+
+    .feedback-list{display:flex;flex-direction:column;gap:10px;list-style:none}
+    .card{position:relative;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-md) var(--space-md) var(--space-md) calc(var(--space-md) + 10px);box-shadow:var(--shadow-card);animation:card-in var(--dur-normal) var(--ease-spring) both;transition:background var(--dur-normal),border-color var(--dur-normal),opacity var(--dur-normal)}
+    @keyframes card-in{from{opacity:0;transform:translateY(14px) scale(.98)}}
+    .card.is-seen{background:var(--bg-card-seen);border-color:var(--border-subtle);opacity:.45}
+    .card.is-seen:hover,.card.is-seen:focus-within{opacity:.7}
+    .card.is-liked{border-color:rgba(76,217,123,0.2)}
+    .card::before{content:'';position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 2px 2px 0;transition:background var(--dur-normal)}
+    .card:not(.is-seen)::before{background:linear-gradient(180deg,var(--accent-light),var(--accent))}
+    .card.is-seen::before{background:rgba(255,255,255,0.05)}
+    .card.is-liked::before{background:linear-gradient(180deg,var(--like-color),#2ea854)}
+    .card-body{display:flex;align-items:flex-start;gap:var(--space-sm)}
+    .card-text{flex:1;font-size:var(--text-base);font-weight:500;line-height:1.65;color:var(--text);word-break:break-word}
+    .seen-dot{flex-shrink:0;width:7px;height:7px;border-radius:50%;margin-top:7px;transition:all var(--dur-normal)}
+    .seen-dot.unseen{background:var(--accent-light);box-shadow:0 0 5px rgba(96,117,224,.5)}
+    .seen-dot.seen{background:rgba(255,255,255,0.07);box-shadow:none}
+    .card-actions{display:flex;align-items:center;gap:var(--space-sm);margin-top:8px;flex-wrap:wrap}
+    .card-action-btn{display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:inherit;font-size:var(--text-xs);font-weight:600;padding:4px 12px;border-radius:var(--radius-full);cursor:pointer;transition:all var(--dur-fast);touch-action:manipulation}
+    .card-action-btn:active{transform:scale(.94)}
+    .btn-like:hover{border-color:rgba(76,217,123,0.4);color:var(--like-color)}
+    .btn-like.liked{background:var(--like-dim);border-color:rgba(76,217,123,0.35);color:var(--like-color)}
+    .btn-skip:hover{border-color:rgba(224,92,110,0.3);color:var(--skip-color)}
+    .btn-save:hover{border-color:var(--border-active);color:var(--accent-light)}
+    .btn-unskip{border-color:rgba(224,92,110,0.15);color:rgba(224,92,110,0.6)}
+    .btn-unskip:hover{border-color:rgba(224,92,110,0.3);color:var(--skip-color)}
+
+    /* SWIPE */
+    .swipe-section{display:flex;flex-direction:column;align-items:center}
+    .swipe-hint{text-align:center;color:var(--text-dim);font-size:var(--text-sm);font-weight:500;margin-bottom:var(--space-lg)}
+    .swipe-container{position:relative;width:100%;height:400px;display:flex;align-items:center;justify-content:center}
+    .swipe-card{position:absolute;width:calc(100% - var(--space-md));max-width:480px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-xl) var(--space-xl) var(--space-lg);box-shadow:var(--shadow-float);cursor:grab;user-select:none;touch-action:none;will-change:transform}
+    .swipe-card:active{cursor:grabbing}
+    .swipe-card-deco{display:block;font-size:3rem;font-weight:900;color:rgba(96,117,224,0.12);line-height:1;margin-bottom:var(--space-sm)}
+    .swipe-card-text{font-size:var(--text-xl);font-weight:600;line-height:1.55;color:var(--text);word-break:break-word}
+    .swipe-seen-tag{display:inline-flex;align-items:center;gap:5px;margin-top:var(--space-md);font-size:var(--text-xs);font-weight:600;padding:4px 10px;border-radius:var(--radius-full);text-transform:uppercase;letter-spacing:.07em}
+    .swipe-seen-tag.unseen{background:var(--accent-dim);color:var(--accent-lighter);border:1px solid rgba(96,117,224,.2)}
+    .swipe-seen-tag.seen{background:rgba(255,255,255,.04);color:var(--text-dim);border:1px solid rgba(255,255,255,.06)}
+    .drag-indicator{position:absolute;top:var(--space-md);font-size:var(--text-sm);font-weight:800;padding:4px 14px;border-radius:6px;pointer-events:none;opacity:0;text-transform:uppercase;letter-spacing:.06em;transition:opacity 60ms}
+    .drag-indicator.left{right:var(--space-md);background:var(--skip-dim);border:2px solid rgba(224,92,110,.5);color:var(--skip-color);transform:rotate(8deg)}
+    .drag-indicator.right{left:var(--space-md);background:var(--like-dim);border:2px solid rgba(76,217,123,.5);color:var(--like-color);transform:rotate(-8deg)}
+
+    .swipe-actions{display:flex;align-items:center;justify-content:center;gap:var(--space-xl);margin-top:var(--space-lg)}
+    .swipe-action-btn{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;cursor:pointer;touch-action:manipulation;font-family:inherit;transition:transform var(--dur-fast) var(--ease-spring)}
+    .swipe-action-btn:active{transform:scale(.88)}
+    .action-circle{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:2px solid;transition:background var(--dur-fast),box-shadow var(--dur-fast)}
+    .btn-s .action-circle{border-color:rgba(224,92,110,0.35);background:var(--skip-dim);color:var(--skip-color)}
+    .btn-s:hover .action-circle{background:rgba(224,92,110,0.2);box-shadow:0 4px 16px var(--skip-glow)}
+    .btn-l .action-circle{border-color:rgba(76,217,123,0.35);background:var(--like-dim);color:var(--like-color)}
+    .btn-l:hover .action-circle{background:rgba(76,217,123,0.2);box-shadow:0 4px 16px var(--like-glow)}
+    .action-label{font-size:var(--text-xs);font-weight:600}
+    .btn-s .action-label{color:rgba(224,92,110,.6)}.btn-l .action-label{color:rgba(76,217,123,.6)}
+
+    .swipe-progress{text-align:center;margin-top:var(--space-md);color:var(--text-dim);font-size:var(--text-sm);font-weight:500}
+    .swipe-progress-num{color:var(--accent-light);font-weight:800;font-size:var(--text-md)}
+    .swipe-stats{display:flex;align-items:center;justify-content:center;gap:var(--space-lg);margin-top:var(--space-sm)}
+    .swipe-stat{display:flex;align-items:center;gap:5px;font-size:var(--text-xs);font-weight:600;color:var(--text-dim)}
+    .swipe-stat-dot{width:7px;height:7px;border-radius:50%}
+    .stat-liked .swipe-stat-dot{background:var(--like-color)}.stat-liked .swipe-stat-num{color:var(--like-color)}
+    .stat-skipped .swipe-stat-dot{background:var(--skip-color)}.stat-skipped .swipe-stat-num{color:var(--skip-color)}
+    .swipe-stat-num{font-weight:700}
+
+    .swipe-done{text-align:center;padding:var(--space-xl);min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-sm)}
+    .done-icon{font-size:2.5rem;margin-bottom:var(--space-sm);filter:drop-shadow(0 0 12px rgba(96,117,224,.4))}
+    .done-title{font-size:var(--text-lg);font-weight:800;color:var(--text);letter-spacing:-0.02em}
+    .done-body{font-size:var(--text-sm);color:var(--text-dim);max-width:220px;line-height:1.6}
+    .done-summary{display:flex;gap:var(--space-md);margin-top:var(--space-md)}
+    .done-stat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:var(--space-sm) var(--space-md);border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-card);min-width:72px}
+    .done-stat-num{font-size:var(--text-xl);font-weight:900;letter-spacing:-0.03em}
+    .done-stat-lbl{font-size:var(--text-xs);color:var(--text-dim);font-weight:500}
+    .liked-num{color:var(--like-color)}.skipped-num{color:var(--skip-color)}.seen-num{color:var(--accent-light)}
+
+    /* SAVE-AS-IMAGE CARD (offscreen render target) */
+    .save-card{position:fixed;left:-9999px;top:-9999px;width:400px;padding:32px;background:linear-gradient(145deg,#13131F,#0F0F1A);border:2px solid rgba(96,117,224,0.25);border-radius:20px;font-family:'Inter',system-ui,sans-serif;color:#EEEEFF}
+    .save-card-brand{font-size:11px;font-weight:700;color:rgba(96,117,224,0.6);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px}
+    .save-card-quote{font-size:40px;font-weight:900;color:rgba(96,117,224,0.15);line-height:1;margin-bottom:4px}
+    .save-card-text{font-size:17px;font-weight:600;line-height:1.6;color:#EEEEFF;word-break:break-word}
+    .save-card-footer{margin-top:16px;font-size:10px;color:rgba(238,238,255,0.25);font-weight:500}
+
+    .sheet-overlay{position:fixed;inset:0;z-index:300;background:rgba(5,5,10,0.72);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;animation:overlay-in var(--dur-normal) var(--ease-smooth)}
+    @keyframes overlay-in{from{opacity:0}}
+    .bottom-sheet{width:100%;max-width:var(--max-content);background:var(--bg-surface);border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border);border-bottom:none;max-height:82dvh;display:flex;flex-direction:column;animation:sheet-up var(--dur-normal) var(--ease-spring)}
+    @keyframes sheet-up{from{transform:translateY(100%)}}
+    .sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.1);margin:10px auto 0}
+    .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--border-subtle);flex-shrink:0}
+    .sheet-title{font-size:var(--text-md);font-weight:800;color:var(--text);letter-spacing:-0.02em}
+    .sheet-header-actions{display:flex;align-items:center;gap:var(--space-sm)}
+    .sheet-close{background:none;border:none;color:var(--text-dim);font-size:1.2rem;cursor:pointer;padding:4px;transition:color var(--dur-fast);touch-action:manipulation}
+    .sheet-close:hover{color:var(--text)}
+    .sheet-save-all{display:inline-flex;align-items:center;gap:4px;background:var(--accent-dim);border:1px solid var(--border-active);color:var(--accent-lighter);font-family:inherit;font-size:var(--text-xs);font-weight:600;padding:5px 12px;border-radius:var(--radius-full);cursor:pointer;transition:all var(--dur-fast);touch-action:manipulation}
+    .sheet-save-all:hover{background:var(--accent-mid)}
+    .sheet-body{overflow-y:auto;padding:var(--space-md) var(--space-lg);padding-bottom:calc(var(--space-lg) + var(--safe-bottom));display:flex;flex-direction:column;gap:10px}
+    .sheet-empty{text-align:center;padding:var(--space-xl);color:var(--text-dim);font-size:var(--text-sm);line-height:1.6}
+
+    .toggle-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:var(--max-content);z-index:200;padding:var(--space-md) var(--space-lg);padding-bottom:calc(var(--space-md) + var(--safe-bottom));background:linear-gradient(to top,var(--bg) 60%,transparent)}
+    .toggle-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:var(--space-sm);background:var(--accent);color:#fff;font-family:inherit;font-size:var(--text-base);font-weight:700;letter-spacing:-0.01em;border:none;border-radius:var(--radius-full);padding:15px var(--space-xl);cursor:pointer;box-shadow:var(--shadow-btn);transition:transform var(--dur-fast),box-shadow var(--dur-fast);touch-action:manipulation}
+    .toggle-btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-btn-hover)}
+    .toggle-btn:active{transform:scale(.98)}
+
+    .view-wrapper{transition:opacity var(--dur-normal) var(--ease-smooth),transform var(--dur-normal) var(--ease-smooth)}
+    .view-wrapper.exiting{opacity:0;transform:scale(.97)}
+    .view-wrapper.entering{opacity:0;transform:scale(1.02)}
+
+    .toast{position:fixed;bottom:calc(90px + var(--safe-bottom) + 8px);left:50%;transform:translateX(-50%);background:var(--bg-elevated);border:1px solid var(--border-active);color:var(--text);font-size:var(--text-sm);font-weight:600;padding:10px 20px;border-radius:var(--radius-full);box-shadow:0 4px 20px rgba(0,0,0,0.4);z-index:500;white-space:nowrap;animation:toast-in 280ms var(--ease-spring) both;pointer-events:none}
+    @keyframes toast-in{from{opacity:0;transform:translateX(-50%) translateY(12px)}}
+    .toast.out{animation:toast-out 220ms var(--ease-smooth) both}
+    @keyframes toast-out{to{opacity:0;transform:translateX(-50%) translateY(8px)}}
+
+    @media(min-width:600px){:root{--text-base:1rem;--text-md:1.1rem;--text-lg:1.3rem;--text-xl:1.55rem}.swipe-container{height:420px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <header class="header">
+    <div class="header-row">
+      <div class="header-wordmark">
+        <h1 class="header-title">Wall of Truth</h1>
+        <p class="header-tagline">Unfiltered. Live.</p>
+      </div>
+      <div class="header-right">
+        <button class="hdr-btn hdr-btn-liked" id="liked-btn">♥ <span class="badge-pill badge-liked" id="liked-count">0</span></button>
+        <button class="hdr-btn hdr-btn-skipped" id="skipped-btn">✕ <span class="badge-pill badge-skipped" id="skipped-count">0</span></button>
+        <div class="unseen-badge all-seen" id="unseen-badge" title="Unseen">0</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="status-bar" role="status" aria-live="polite">
+    <span><span class="status-count" id="response-count">–</span> voices</span>
+    <span id="last-updated">Connecting…</span>
+  </div>
+
+  <main class="main">
+    <div class="submit-banner">
+      <div class="submit-copy">
+        <p class="submit-prompt" id="submit-prompt">How are you liking it so far?</p>
+        <p class="submit-sub">Your response goes live instantly.</p>
+      </div>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSeUlTbSVVHEINNrk7_GUVaXMjP6NkPCFeoQUQ6HAGTTQIgf1w/viewform" target="_blank" rel="noopener noreferrer" class="submit-link">Speak up ↗</a>
+    </div>
+    <div class="view-wrapper" id="view-wrapper">
+      <div class="state-msg"><div class="spinner"></div><p style="font-size:var(--text-sm);color:var(--text-dim)">Loading…</p></div>
+    </div>
+  </main>
+
+  <div class="toggle-bar">
+    <button class="toggle-btn" id="toggle-btn"><span aria-hidden="true">⇆</span><span id="toggle-label">List View</span></button>
+  </div>
+
+</div>
+
+<!-- html2canvas CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+'use strict';
+
+const CONFIG={
+  API_URL:'https://script.google.com/macros/s/AKfycbyIuOeWRieV8wa8D0rKIBKiqgUhAls0ngeTNhZv9DSCZAjaMIDz6NLpxA6uAxEEbhG_/exec',
+  POLL_MS:5000,
+  VISIBLE_STACK:3,   // How many cards VISUALLY peek (depth layers)
+  SWIPE_THRESHOLD:0.28,
+  VELOCITY_THRESHOLD:0.40,
+  SEEN_DWELL_MS:900,
+  SEEN_VISIBILITY:0.65,
+  STORAGE:{seen:'wot_seen_v1',liked:'wot_liked_v1',skipped:'wot_skipped_v1'},
+};
+
+/* STORAGE */
+function makeStore(key){
+  let _c=null;
+  function ld(){if(_c)return _c;try{const r=localStorage.getItem(key);_c=r?new Set(JSON.parse(r)):new Set()}catch{_c=new Set()}return _c}
+  function fl(){try{localStorage.setItem(key,JSON.stringify([...ld()]))}catch{}}
+  return{has(id){return ld().has(id)},add(id){ld().add(id);fl()},remove(id){ld().delete(id);fl()},addMany(ids){ids.forEach(id=>ld().add(id));fl()},count(){return ld().size},all(){return[...ld()]},unseenFrom(ids){const s=ld();return ids.filter(id=>!s.has(id)).length}};
+}
+const Seen=makeStore(CONFIG.STORAGE.seen),Liked=makeStore(CONFIG.STORAGE.liked),Skipped=makeStore(CONFIG.STORAGE.skipped);
+
+const state={view:'swipe',responses:[],knownIds:new Set(),initialLoaded:false,fetching:false,lastFetchedAt:null,pollTimer:null,observer:null,pendingSwipeIds:[],session:{liked:0,skipped:0,seen:0}};
+
+const dom={view:document.getElementById('view-wrapper'),toggleBtn:document.getElementById('toggle-btn'),toggleLabel:document.getElementById('toggle-label'),count:document.getElementById('response-count'),lastUpdated:document.getElementById('last-updated'),unseenBadge:document.getElementById('unseen-badge'),submitPrompt:document.getElementById('submit-prompt'),likedBtn:document.getElementById('liked-btn'),likedCount:document.getElementById('liked-count'),skippedBtn:document.getElementById('skipped-btn'),skippedCount:document.getElementById('skipped-count')};
+
+/* PROMPT */
+const PROMPTS=["How are you liking it so far?","What's on your mind?"];
+let pIdx=0;
+setInterval(()=>{pIdx=(pIdx+1)%PROMPTS.length;dom.submitPrompt.style.opacity='0';setTimeout(()=>{dom.submitPrompt.textContent=PROMPTS[pIdx];dom.submitPrompt.style.transition='opacity 350ms ease';dom.submitPrompt.style.opacity='1'},220)},8000);
+
+/* TOAST */
+let _tt=null;
+function showToast(m){document.querySelector('.toast')?.remove();if(_tt)clearTimeout(_tt);const e=document.createElement('div');e.className='toast';e.textContent=m;document.body.appendChild(e);_tt=setTimeout(()=>{e.classList.add('out');setTimeout(()=>e.remove(),240)},1800)}
+
+/* ════════════════════════════════════════
+   SAVE AS IMAGE
+   Creates a styled card offscreen, renders
+   it to canvas via html2canvas, then triggers
+   a download as PNG.
+════════════════════════════════════════ */
+async function saveAsImage(text){
+  showToast('Generating image…');
+
+  // Create styled offscreen card
+  const el=document.createElement('div');
+  el.className='save-card';
+  el.innerHTML=`
+    <div class="save-card-brand">Wall of Truth</div>
+    <div class="save-card-quote">"</div>
+    <div class="save-card-text">${esc(text)}</div>
+    <div class="save-card-footer">walloftruth — unfiltered. live.</div>
+  `;
+  document.body.appendChild(el);
+
+  try{
+    const canvas=await html2canvas(el,{backgroundColor:'#0A0A0F',scale:2,logging:false,useCORS:true});
+    // Convert to blob and trigger download
+    canvas.toBlob(blob=>{
+      if(!blob){showToast('Could not generate image');return}
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`walloftruth-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Image saved!');
+    },'image/png');
+  }catch(err){
+    console.error(err);
+    showToast('Could not save image');
+  }finally{
+    el.remove();
+  }
+}
+
+async function saveAllAsImage(items){
+  showToast('Generating image…');
+
+  const el=document.createElement('div');
+  el.className='save-card';
+  el.style.width='440px';
+  el.innerHTML=`
+    <div class="save-card-brand">Wall of Truth — My Liked</div>
+    <div style="margin-top:8px">
+      ${items.map((r,i)=>`
+        <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(96,117,224,0.1)">
+          <div class="save-card-text" style="font-size:14px">${i+1}. ${esc(r.feedback)}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="save-card-footer">walloftruth — unfiltered. live.</div>
+  `;
+  document.body.appendChild(el);
+
+  try{
+    const canvas=await html2canvas(el,{backgroundColor:'#0A0A0F',scale:2,logging:false});
+    canvas.toBlob(blob=>{
+      if(!blob){showToast('Could not generate');return}
+      const url=URL.createObjectURL(blob);const a=document.createElement('a');
+      a.href=url;a.download=`walloftruth-liked-${Date.now()}.png`;a.click();
+      URL.revokeObjectURL(url);showToast('Image saved!');
+    },'image/png');
+  }catch(err){console.error(err);showToast('Could not save image')}
+  finally{el.remove()}
+}
+
+/* DATA */
+async function fetchResponses(){
+  if(state.fetching)return;state.fetching=true;
+  try{
+    const r=await fetch(`${CONFIG.API_URL}?path=responses&_t=${Date.now()}`,{method:'GET',cache:'no-store',signal:AbortSignal.timeout(10000)});
+    if(!r.ok)throw new Error(`HTTP ${r.status}`);
+    const j=await r.json();if(!j.success)throw new Error(j.error?.message||'API error');
+    handleNewData(j.data||[]);state.lastFetchedAt=new Date();updateStatusBar();clearErrorStrip();
+  }catch(e){console.error('[WoT]',e.message);if(!state.initialLoaded)renderFatalError('Could not load. Check your API URL.');else showErrorStrip('Refresh failed — retrying.')}
+  finally{state.fetching=false}
+}
+
+function handleNewData(incoming){
+  const fresh=incoming.filter(r=>!state.knownIds.has(r.id));
+  if(fresh.length===0&&state.initialLoaded)return;
+  fresh.forEach(r=>{state.knownIds.add(r.id);state.responses.push(r)});
+  state.initialLoaded=true;updateStatusBar();updateUnseenBadge();updateLikedCount();updateSkippedCount();
+  if(state.view==='list'){
+    const listEl=dom.view.querySelector('.feedback-list');
+    if(fresh.length>0&&listEl)prependListCards(fresh);else renderListView();
+  }else{
+    if(fresh.length>0){
+      if(state.responses.length===fresh.length){state.pendingSwipeIds=[];renderSwipeView();return}
+      state.pendingSwipeIds.push(...fresh.map(r=>r.id));showNewBanner();
+    }
+  }
+}
+
+function showNewBanner(){removeBanner();const n=state.pendingSwipeIds.length;if(!n)return;const b=document.createElement('div');b.className='new-banner';b.id='new-banner';b.textContent=`↑ ${n} new response${n!==1?'s':''} — tap to load`;b.addEventListener('click',()=>{state.pendingSwipeIds=[];removeBanner();renderSwipeView();showToast('New responses loaded')});dom.view.insertAdjacentElement('beforebegin',b)}
+function removeBanner(){document.getElementById('new-banner')?.remove()}
+
+function startPolling(){stopPolling();fetchResponses();state.pollTimer=setInterval(fetchResponses,CONFIG.POLL_MS)}
+function stopPolling(){if(state.pollTimer){clearInterval(state.pollTimer);state.pollTimer=null}}
+
+/* LIKE / SKIP */
+function doLike(id,fromSwipe=false){
+  if(Liked.has(id)){Liked.remove(id);state.session.liked=Math.max(0,state.session.liked-1);if(!fromSwipe)updateCardLike(id,false);showToast('Removed from liked')}
+  else{Liked.add(id);Seen.add(id);state.session.liked++;if(!fromSwipe)updateCardLike(id,true);showToast('♥ Liked!')}
+  updateLikedCount();updateUnseenBadge();
+}
+function doSkip(id){Skipped.add(id);Seen.add(id);state.session.skipped++;updateUnseenBadge();updateSkippedCount();const c=dom.view.querySelector(`.card[data-id="${id}"]`);if(c){c.style.transition='opacity 180ms,transform 180ms';c.style.opacity='0';c.style.transform='translateX(-18px) scale(.97)';setTimeout(()=>c.remove(),190)}showToast('Skipped')}
+function doUnskip(id){Skipped.remove(id);updateSkippedCount();showToast('Added back')}
+function updateCardLike(id,liked){const c=dom.view.querySelector(`.card[data-id="${id}"]`);if(!c)return;const b=c.querySelector('.btn-like');if(b){b.classList.toggle('liked',liked);b.textContent=liked?'♥ Liked':'♡ Like'}c.classList.toggle('is-liked',liked)}
+
+/* VIEW SWITCH */
+function switchView(t){if(t===state.view)return;removeBanner();dom.view.classList.add('exiting');setTimeout(()=>{state.view=t;dom.view.classList.remove('exiting');dom.view.classList.add('entering');if(t==='list')renderListView();else{state.pendingSwipeIds=[];renderSwipeView()}requestAnimationFrame(()=>dom.view.classList.remove('entering'));updateToggleButton()},280)}
+
+/* LIST VIEW */
+function renderListView(){
+  if(!state.initialLoaded){dom.view.innerHTML=loadingHTML();return}
+  const visible=state.responses.filter(r=>!Skipped.has(r.id));
+  if(visible.length===0){dom.view.innerHTML=emptyHTML();return}
+  const w=document.createElement('div');
+  const ids=visible.map(r=>r.id);const unseen=Seen.unseenFrom(ids);
+  if(unseen>0){const b=document.createElement('div');b.className='mark-all-bar';b.innerHTML=`<button class="mark-all-btn" id="mark-all-btn">Mark all seen (${unseen})</button>`;w.appendChild(b)}
+  const list=document.createElement('ul');list.className='feedback-list';list.setAttribute('role','list');
+  visible.forEach((r,i)=>list.appendChild(makeListCard(r,i)));w.appendChild(list);
+  dom.view.innerHTML='';dom.view.appendChild(w);
+  document.getElementById('mark-all-btn')?.addEventListener('click',()=>{Seen.addMany(visible.map(r=>r.id));renderListView();updateUnseenBadge()});
+  attachSeenObserver();
+}
+
+function prependListCards(fresh){const list=dom.view.querySelector('.feedback-list');if(!list){renderListView();return}const toAdd=fresh.filter(r=>!Skipped.has(r.id));[...toAdd].reverse().forEach((r,i)=>list.insertBefore(makeListCard(r,i),list.firstChild));attachSeenObserver();updateUnseenBadge()}
+
+function makeListCard(r,index){
+  const seen=Seen.has(r.id),liked=Liked.has(r.id);
+  const li=document.createElement('li');li.className=['card',seen?'is-seen':'',liked?'is-liked':''].filter(Boolean).join(' ');li.dataset.id=r.id;li.style.animationDelay=`${Math.min(index,12)*45}ms`;
+  const body=document.createElement('div');body.className='card-body';
+  body.innerHTML=`<p class="card-text">${esc(r.feedback)}</p><span class="seen-dot ${seen?'seen':'unseen'}" title="${seen?'Seen':'New'}"></span>`;
+  li.appendChild(body);
+
+  const actions=document.createElement('div');actions.className='card-actions';
+
+  const likeBtn=document.createElement('button');likeBtn.className=`card-action-btn btn-like${liked?' liked':''}`;likeBtn.textContent=liked?'♥ Liked':'♡ Like';likeBtn.addEventListener('click',e=>{e.stopPropagation();doLike(r.id)});
+  const skipBtn=document.createElement('button');skipBtn.className='card-action-btn btn-skip';skipBtn.textContent='Skip';skipBtn.addEventListener('click',e=>{e.stopPropagation();doSkip(r.id)});
+  const saveBtn=document.createElement('button');saveBtn.className='card-action-btn btn-save';saveBtn.textContent='📷 Save';saveBtn.addEventListener('click',e=>{e.stopPropagation();saveAsImage(r.feedback)});
+
+  actions.appendChild(likeBtn);actions.appendChild(skipBtn);actions.appendChild(saveBtn);
+  li.appendChild(actions);return li;
+}
+
+function attachSeenObserver(){
+  state.observer?.disconnect();const cards=dom.view.querySelectorAll('.card:not(.is-seen)');if(!cards.length)return;const timers=new Map();
+  state.observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{const card=entry.target,id=card.dataset.id;if(entry.isIntersecting){if(!timers.has(card)){timers.set(card,setTimeout(()=>{Seen.add(id);card.classList.add('is-seen');const d=card.querySelector('.seen-dot');if(d){d.className='seen-dot seen';d.title='Seen'}updateUnseenBadge();state.observer?.unobserve(card);timers.delete(card)},CONFIG.SEEN_DWELL_MS))}}else{const t=timers.get(card);if(t!==undefined){clearTimeout(t);timers.delete(card)}}})},{threshold:CONFIG.SEEN_VISIBILITY});
+  cards.forEach(c=>state.observer.observe(c));
+}
+
+/* ════════════════════════════════════════
+   SWIPE VIEW
+
+   FIX: No swipeIndex. The queue is always
+   filtered live. When you like/skip a card,
+   it disappears from the queue. The next
+   card is always queue[0].
+════════════════════════════════════════ */
+function getSwipeQueue(){
+  const ps=new Set(state.pendingSwipeIds);
+  return state.responses.filter(r=>
+    !Skipped.has(r.id) && !Liked.has(r.id) && !Seen.has(r.id) && !ps.has(r.id)
+  );
+}
+
+function renderSwipeView(){
+  const queue=getSwipeQueue();
+
+  if(queue.length===0){renderSwipeDone();return}
+
+  const sec=document.createElement('div');sec.className='swipe-section';
+  const hint=document.createElement('p');hint.className='swipe-hint';hint.innerHTML='← Skip &nbsp;·&nbsp; Like →';sec.appendChild(hint);
+
+  const container=document.createElement('div');container.className='swipe-container';
+
+  // Only render top VISIBLE_STACK cards for the depth effect
+  const renderCount=Math.min(queue.length, CONFIG.VISIBLE_STACK);
+  for(let i=renderCount-1; i>=0; i--){
+    container.appendChild(makeSwipeCard(queue[i], i));
+  }
+  sec.appendChild(container);
+
+  const actions=document.createElement('div');actions.className='swipe-actions';
+  actions.innerHTML=`
+    <button class="swipe-action-btn btn-s" id="btn-skip"><span class="action-circle">✕</span><span class="action-label">Skip</span></button>
+    <button class="swipe-action-btn btn-l" id="btn-like"><span class="action-circle">♥</span><span class="action-label">Like</span></button>`;
+  sec.appendChild(actions);
+
+  // Progress: how many done vs total eligible
+  const totalEligible=state.responses.filter(r=>!new Set(state.pendingSwipeIds).has(r.id)).length;
+  const done=totalEligible - queue.length;
+  const prog=document.createElement('p');prog.className='swipe-progress';prog.id='swipe-progress';
+  prog.innerHTML=`<span class="swipe-progress-num">${done + 1}</span> / ${totalEligible}`;
+  sec.appendChild(prog);
+
+  const stats=document.createElement('div');stats.className='swipe-stats';
+  stats.innerHTML=`
+    <span class="swipe-stat stat-liked"><span class="swipe-stat-dot"></span><span class="swipe-stat-num">${state.session.liked}</span> liked</span>
+    <span class="swipe-stat stat-skipped"><span class="swipe-stat-dot"></span><span class="swipe-stat-num">${state.session.skipped}</span> skipped</span>`;
+  sec.appendChild(stats);
+
+  dom.view.innerHTML='';dom.view.appendChild(sec);
+  const top=container.querySelector('[data-depth="0"]');
+  if(top)attachSwipeHandlers(top,queue[0].id);
+  document.getElementById('btn-skip')?.addEventListener('click',()=>triggerSwipe('left'));
+  document.getElementById('btn-like')?.addEventListener('click',()=>triggerSwipe('right'));
+}
+
+function makeSwipeCard(r,depth){
+  const seen=Seen.has(r.id);const card=document.createElement('div');
+  card.className='swipe-card';card.dataset.id=r.id;card.dataset.depth=depth;
+  if(depth===0){card.style.zIndex=10;card.style.borderColor='rgba(96,117,224,0.3)'}
+  else if(depth===1){card.style.zIndex=9;card.style.transform='translateY(8px) scale(0.96)';card.style.borderColor='rgba(96,117,224,0.1)'}
+  else{card.style.zIndex=8;card.style.transform='translateY(16px) scale(0.92)';card.style.borderColor='rgba(96,117,224,0.05)';card.style.opacity='0.7'}
+  card.innerHTML=`
+    <div class="drag-indicator left">Skip</div>
+    <div class="drag-indicator right">Like</div>
+    <span class="swipe-card-deco" aria-hidden="true">"</span>
+    <p class="swipe-card-text">${esc(r.feedback)}</p>
+    <span class="swipe-seen-tag ${seen?'seen':'unseen'}">${seen?'✓ Seen':'● New'}</span>`;
+  return card;
+}
+
+function renderSwipeDone(){
+  const total=state.session.liked+state.session.skipped;
+  dom.view.innerHTML=`
+    <div class="swipe-done">
+      <div class="done-icon">✦</div>
+      <h2 class="done-title">All caught up</h2>
+      <p class="done-body">You've gone through every voice on the wall.</p>
+      <div class="done-summary">
+        <div class="done-stat"><span class="done-stat-num seen-num">${total}</span><span class="done-stat-lbl">Total</span></div>
+        <div class="done-stat"><span class="done-stat-num liked-num">${state.session.liked}</span><span class="done-stat-lbl">Liked</span></div>
+        <div class="done-stat"><span class="done-stat-num skipped-num">${state.session.skipped}</span><span class="done-stat-lbl">Skipped</span></div>
+      </div>
+    </div>`;
+}
+
+/* SWIPE ENGINE */
+function triggerSwipe(dir){const t=dom.view.querySelector('.swipe-card[data-depth="0"]');if(t)dismissCard(t,dir,t.dataset.id)}
+
+function attachSwipeHandlers(card,rid){
+  const drag={active:false,sx:0,sy:0,cx:0,st:0};
+  const li=card.querySelector('.drag-indicator.left'),ri=card.querySelector('.drag-indicator.right');
+  function dn(e){if(!e.isPrimary)return;drag.active=true;drag.sx=e.clientX;drag.sy=e.clientY;drag.cx=e.clientX;drag.st=Date.now();card.setPointerCapture(e.pointerId);card.style.transition='none'}
+  function mv(e){if(!drag.active||!e.isPrimary)return;drag.cx=e.clientX;const dx=e.clientX-drag.sx,dy=e.clientY-drag.sy;card.style.transform=`translateX(${dx}px) translateY(${dy*.22}px) rotate(${dx*.065}deg)`;const int=Math.min(Math.abs(dx)/(card.offsetWidth*CONFIG.SWIPE_THRESHOLD),1);if(dx<-15){li.style.opacity=int;ri.style.opacity=0}else if(dx>15){ri.style.opacity=int;li.style.opacity=0}else{li.style.opacity=0;ri.style.opacity=0}}
+  function up(e){if(!drag.active||!e.isPrimary)return;drag.active=false;const dx=drag.cx-drag.sx,el=Math.max(1,Date.now()-drag.st),v=Math.abs(dx)/el;if(Math.abs(dx)>card.offsetWidth*CONFIG.SWIPE_THRESHOLD||v>CONFIG.VELOCITY_THRESHOLD)dismissCard(card,dx>0?'right':'left',rid);else snapBack(card)}
+  function cn(e){if(!e.isPrimary)return;drag.active=false;snapBack(card)}
+  card.addEventListener('pointerdown',dn);card.addEventListener('pointermove',mv);card.addEventListener('pointerup',up);card.addEventListener('pointercancel',cn);
+}
+
+function dismissCard(card,dir,id){
+  const ex=dir==='right'?'115vw':'-115vw',rot=dir==='right'?'22deg':'-22deg';
+  card.style.transition='transform 260ms cubic-bezier(0.55,0,1,0.45)';
+  card.style.transform=`translateX(${ex}) rotate(${rot})`;
+  if(dir==='right'){if(!Liked.has(id)){Liked.add(id);state.session.liked++;updateLikedCount();showToast('♥ Liked!')}}
+  else{Skipped.add(id);state.session.skipped++;updateSkippedCount();showToast('Skipped')}
+  Seen.add(id);state.session.seen++;updateUnseenBadge();
+  // No swipeIndex increment needed — the card is now filtered out of the queue
+  setTimeout(()=>renderSwipeView(),260);
+}
+
+function snapBack(card){
+  const d=parseInt(card.dataset.depth);let r='';
+  if(d===1)r='translateY(8px) scale(0.96)';else if(d>=2)r='translateY(16px) scale(0.92)';
+  card.style.transition='transform 360ms cubic-bezier(0.34,1.56,0.64,1)';card.style.transform=r;
+  card.querySelectorAll('.drag-indicator').forEach(el=>el.style.opacity=0);
+}
+
+/* LIKED DRAWER */
+function openLikedDrawer(){
+  const items=state.responses.filter(r=>Liked.has(r.id));
+  openSheet('♥ Liked',items,{showSaveAll:true,showUnlike:true,showSave:true,emptyMsg:'Nothing liked yet.<br/>Swipe right or tap ♡ on a response.'});
+}
+
+/* SKIPPED DRAWER */
+function openSkippedDrawer(){
+  const items=state.responses.filter(r=>Skipped.has(r.id));
+  openSheet('✕ Skipped',items,{showUnskip:true,showLike:true,showSave:true,emptyMsg:'No skipped cards.'});
+}
+
+function openSheet(title,items,opts={}){
+  const overlay=document.createElement('div');overlay.className='sheet-overlay';overlay.id='sheet-overlay';
+  const sheet=document.createElement('div');sheet.className='bottom-sheet';
+  let ha='<button class="sheet-close" id="sheet-close">✕</button>';
+  if(opts.showSaveAll&&items.length>0)ha=`<div class="sheet-header-actions"><button class="sheet-save-all" id="sheet-save-all">📷 Save all</button>${ha}</div>`;
+  else ha=`<div class="sheet-header-actions">${ha}</div>`;
+
+  sheet.innerHTML=`<div class="sheet-handle"></div><div class="sheet-header"><h2 class="sheet-title">${esc(title)} (${items.length})</h2>${ha}</div><div class="sheet-body" id="sheet-body">${items.length===0?`<p class="sheet-empty">${opts.emptyMsg||'Empty.'}</p>`:''}</div>`;
+  overlay.appendChild(sheet);document.body.appendChild(overlay);
+
+  if(items.length>0){
+    const body=document.getElementById('sheet-body');
+    items.forEach((r,i)=>{
+      const liked=Liked.has(r.id);const card=document.createElement('div');
+      card.className=`card${liked?' is-liked':''}`;card.dataset.id=r.id;card.style.animationDelay=`${i*40}ms`;
+      const cb=document.createElement('div');cb.className='card-body';cb.innerHTML=`<p class="card-text">${esc(r.feedback)}</p>`;card.appendChild(cb);
+      const actions=document.createElement('div');actions.className='card-actions';
+
+      if(opts.showUnlike){
+        const btn=document.createElement('button');btn.className='card-action-btn btn-like liked';btn.textContent='♥ Liked';
+        btn.addEventListener('click',()=>{Liked.remove(r.id);updateLikedCount();updateCardLike(r.id,false);showToast('Removed');animateRemove(card,overlay,title)});
+        actions.appendChild(btn);
+      }
+      if(opts.showLike){
+        const btn=document.createElement('button');btn.className=`card-action-btn btn-like${liked?' liked':''}`;btn.textContent=liked?'♥ Liked':'♡ Like';
+        btn.addEventListener('click',()=>{doLike(r.id);btn.classList.toggle('liked',Liked.has(r.id));btn.textContent=Liked.has(r.id)?'♥ Liked':'♡ Like';card.classList.toggle('is-liked',Liked.has(r.id))});
+        actions.appendChild(btn);
+      }
+      if(opts.showUnskip){
+        const btn=document.createElement('button');btn.className='card-action-btn btn-unskip';btn.textContent='↩ Add back';
+        btn.addEventListener('click',()=>{doUnskip(r.id);showToast('Added back');animateRemove(card,overlay,title);if(state.view==='list')setTimeout(()=>renderListView(),250)});
+        actions.appendChild(btn);
+      }
+      if(opts.showSave){
+        const btn=document.createElement('button');btn.className='card-action-btn btn-save';btn.textContent='📷 Save';
+        btn.addEventListener('click',()=>saveAsImage(r.feedback));
+        actions.appendChild(btn);
+      }
+
+      card.appendChild(actions);body.appendChild(card);
+    });
+  }
+
+  document.getElementById('sheet-close')?.addEventListener('click',closeSheet);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)closeSheet()});
+  document.getElementById('sheet-save-all')?.addEventListener('click',()=>saveAllAsImage(items));
+}
+
+function animateRemove(card,overlay,prefix){
+  card.style.transition='opacity 200ms,transform 200ms';card.style.opacity='0';card.style.transform='scale(.96)';
+  setTimeout(()=>{card.remove();const rem=overlay.querySelectorAll('.sheet-body .card').length;const t=overlay.querySelector('.sheet-title');if(t)t.textContent=`${prefix} (${rem})`;if(rem===0){const b=overlay.querySelector('.sheet-body');if(b)b.innerHTML=`<p class="sheet-empty">${prefix.includes('Liked')?'Nothing liked.':'No skipped cards.'}</p>`}},210);
+}
+
+function closeSheet(){const o=document.getElementById('sheet-overlay');if(!o)return;o.style.animation='overlay-in 180ms var(--ease-smooth) reverse both';setTimeout(()=>o.remove(),180)}
+
+/* UI */
+function updateToggleButton(){dom.toggleLabel.textContent=state.view==='swipe'?'List View':'Swipe View'}
+function updateStatusBar(){dom.count.textContent=state.responses.length;if(state.lastFetchedAt){const t=state.lastFetchedAt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});dom.lastUpdated.textContent=`Updated ${t}`}}
+function updateUnseenBadge(){const visible=state.responses.filter(r=>!Skipped.has(r.id));const n=Seen.unseenFrom(visible.map(r=>r.id));dom.unseenBadge.textContent=n;dom.unseenBadge.className=n>0?'unseen-badge has-unseen':'unseen-badge all-seen'}
+function updateLikedCount(){dom.likedCount.textContent=Liked.count()}
+function updateSkippedCount(){dom.skippedCount.textContent=Skipped.count()}
+function showErrorStrip(m){let e=document.getElementById('error-strip');if(!e){e=document.createElement('div');e.id='error-strip';e.className='error-strip';dom.view.insertAdjacentElement('beforebegin',e)}e.textContent=`⚠ ${m}`}
+function clearErrorStrip(){document.getElementById('error-strip')?.remove()}
+function renderFatalError(m){dom.view.innerHTML=`<div class="state-msg"><div class="state-icon">⚡</div><h2 class="state-title">Can't connect</h2><p class="state-body">${esc(m)}</p></div>`}
+function loadingHTML(){return`<div class="state-msg"><div class="spinner"></div><p style="font-size:var(--text-sm);color:var(--text-dim)">Loading…</p></div>`}
+function emptyHTML(){return`<div class="state-msg"><div class="state-icon">◎</div><h2 class="state-title">Nothing yet</h2><p class="state-body">Responses will appear here automatically.</p></div>`}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+
+/* EVENTS */
+dom.toggleBtn.addEventListener('click',()=>switchView(state.view==='list'?'swipe':'list'));
+dom.likedBtn.addEventListener('click',openLikedDrawer);
+dom.skippedBtn.addEventListener('click',openSkippedDrawer);
+document.addEventListener('visibilitychange',()=>document.hidden?stopPolling():startPolling());
+
+/* INIT */
+function init(){
+  if(CONFIG.API_URL.includes('YOUR_APPS_SCRIPT')){dom.view.innerHTML=`<div class="state-msg"><div class="state-icon">🔧</div><h2 class="state-title">Setup needed</h2><p class="state-body">Replace <code>YOUR_APPS_SCRIPT_WEB_APP_URL_HERE</code> with your Apps Script URL.</p></div>`;return}
+  updateToggleButton();updateLikedCount();updateSkippedCount();startPolling();
+}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+</script>
+</body>
+</html>
